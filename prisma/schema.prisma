@@ -1,0 +1,47 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Account {
+  id           String        @id @default(cuid())
+  iban         String        @unique
+  label        String
+  currency     String        @default("EUR")
+  createdAt    DateTime      @default(now())
+  transactions Transaction[]
+}
+
+model Transaction {
+  id              String   @id @default(cuid())
+  accountId       String
+  account         Account  @relation(fields: [accountId], references: [id])
+  accountingDate  DateTime
+  valueDate       DateTime
+  description     String
+  merchant        String
+  merchantCountry String   @default("")
+  accountNumber   String   @default("")
+  transactionType String
+  reference       String   @default("")
+  debit           Float?
+  credit          Float?
+  category        String   @default("Other")
+  categoryOverride Boolean  @default(false)
+  transactionDate DateTime
+  transactionTime String   @default("")
+  importHash      String   @unique
+
+  @@index([accountId])
+  @@index([accountingDate])
+  @@index([category])
+}
