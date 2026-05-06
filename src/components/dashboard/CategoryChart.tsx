@@ -31,7 +31,7 @@ export default function CategoryChart({ data, byMonth }: Props) {
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Spending by Category</CardTitle>
-          <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+          <Select value={selectedMonth} onValueChange={(v) => setSelectedMonth(v ?? "all")}>
             <SelectTrigger className="h-7 text-xs w-32">
               <SelectValue />
             </SelectTrigger>
