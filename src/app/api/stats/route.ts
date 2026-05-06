@@ -25,18 +25,18 @@ export async function GET(request: NextRequest) {
       },
     });
 
-    // Internal Transfers are real money movements but not actual spending
+    // Internal Transfers are real money movements but not actual income or spending
     const spendingTx = transactions.filter((t) => t.category !== "Internal Transfer");
 
     const totalDebit = spendingTx.reduce((s: number, t) => s + (t.debit ?? 0), 0);
-    const totalCredit = transactions.reduce((s: number, t) => s + (t.credit ?? 0), 0);
+    const totalCredit = spendingTx.reduce((s: number, t) => s + (t.credit ?? 0), 0);
 
     const monthlyMap: Record<string, { month: string; income: number; expenses: number }> = {};
-    for (const t of transactions) {
+    for (const t of spendingTx) {
       const key = t.accountingDate.toISOString().slice(0, 7);
       if (!monthlyMap[key]) monthlyMap[key] = { month: key, income: 0, expenses: 0 };
       if (t.credit) monthlyMap[key].income += t.credit;
-      if (t.debit && t.category !== "Internal Transfer") monthlyMap[key].expenses += t.debit;
+      if (t.debit) monthlyMap[key].expenses += t.debit;
     }
     const monthly = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month));
 

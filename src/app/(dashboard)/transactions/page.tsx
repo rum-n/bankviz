@@ -124,8 +124,8 @@ export default function TransactionsPage() {
               <TableHead>Description</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead className="text-right">Debit</TableHead>
-              <TableHead className="text-right">Credit</TableHead>
+              <TableHead className="text-right">Out</TableHead>
+              <TableHead className="text-right">In</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
