@@ -17,6 +17,7 @@ interface Stats {
   net: number;
   monthly: { month: string; income: number; expenses: number }[];
   byCategory: { name: string; value: number }[];
+  byCategoryByMonth: Record<string, { name: string; value: number }[]>;
   topMerchants: { name: string; total: number }[];
   runningBalance: { date: string; balance: number }[];
 }
@@ -77,7 +78,7 @@ export default function DashboardPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <MonthlyChart data={stats.monthly} />
-            <CategoryChart data={stats.byCategory} />
+            <CategoryChart data={stats.byCategory} byMonth={stats.byCategoryByMonth} />
           </div>
 
           <BalanceChart data={stats.runningBalance} />

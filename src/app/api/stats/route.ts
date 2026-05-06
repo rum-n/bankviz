@@ -41,12 +41,23 @@ export async function GET(request: NextRequest) {
     const monthly = Object.values(monthlyMap).sort((a, b) => a.month.localeCompare(b.month));
 
     const categoryMap: Record<string, number> = {};
+    const monthCategoryMap: Record<string, Record<string, number>> = {};
     for (const t of spendingTx) {
-      if (t.debit) categoryMap[t.category] = (categoryMap[t.category] ?? 0) + t.debit;
+      if (!t.debit) continue;
+      categoryMap[t.category] = (categoryMap[t.category] ?? 0) + t.debit;
+      const month = t.accountingDate.toISOString().slice(0, 7);
+      if (!monthCategoryMap[month]) monthCategoryMap[month] = {};
+      monthCategoryMap[month][t.category] = (monthCategoryMap[month][t.category] ?? 0) + t.debit;
     }
     const byCategory = Object.entries(categoryMap)
       .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
       .sort((a, b) => b.value - a.value);
+    const byCategoryByMonth: Record<string, { name: string; value: number }[]> = {};
+    for (const [month, cats] of Object.entries(monthCategoryMap)) {
+      byCategoryByMonth[month] = Object.entries(cats)
+        .map(([name, value]) => ({ name, value: Math.round(value * 100) / 100 }))
+        .sort((a, b) => b.value - a.value);
+    }
 
     const merchantMap: Record<string, number> = {};
     for (const t of spendingTx) {
@@ -79,6 +90,7 @@ export async function GET(request: NextRequest) {
       net: Math.round((totalCredit - totalDebit) * 100) / 100,
       monthly,
       byCategory,
+      byCategoryByMonth,
       topMerchants,
       runningBalance,
     });
