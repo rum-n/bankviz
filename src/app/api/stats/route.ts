@@ -22,6 +22,7 @@ export async function GET(request: NextRequest) {
         credit: true,
         category: true,
         merchant: true,
+        merchantCountry: true,
       },
     });
 
@@ -69,6 +70,16 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => b.total - a.total)
       .slice(0, 10);
 
+    const countryMap: Record<string, number> = {};
+    for (const t of spendingTx) {
+      if (!t.debit) continue;
+      const country = t.merchantCountry || "Unknown";
+      countryMap[country] = (countryMap[country] ?? 0) + t.debit;
+    }
+    const byCountry = Object.entries(countryMap)
+      .map(([name, total]) => ({ name, total: Math.round(total * 100) / 100 }))
+      .sort((a, b) => b.total - a.total);
+
     let running = 0;
     const dailyMap: Record<string, number> = {};
     for (const t of transactions) {
@@ -92,6 +103,7 @@ export async function GET(request: NextRequest) {
       byCategory,
       byCategoryByMonth,
       topMerchants,
+      byCountry,
       runningBalance,
     });
   } catch (err) {

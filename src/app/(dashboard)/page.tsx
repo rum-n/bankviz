@@ -6,6 +6,7 @@ import MonthlyChart from "@/components/dashboard/MonthlyChart";
 import CategoryChart from "@/components/dashboard/CategoryChart";
 import BalanceChart from "@/components/dashboard/BalanceChart";
 import TopMerchants from "@/components/dashboard/TopMerchants";
+import CountryChart from "@/components/dashboard/CountryChart";
 import AccountSwitcher from "@/components/AccountSwitcher";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -19,6 +20,7 @@ interface Stats {
   byCategory: { name: string; value: number }[];
   byCategoryByMonth: Record<string, { name: string; value: number }[]>;
   topMerchants: { name: string; total: number }[];
+  byCountry: { name: string; total: number }[];
   runningBalance: { date: string; balance: number }[];
 }
 
@@ -83,7 +85,10 @@ export default function DashboardPage() {
 
           <BalanceChart data={stats.runningBalance} />
 
-          <TopMerchants data={stats.topMerchants} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <TopMerchants data={stats.topMerchants} />
+            <CountryChart data={stats.byCountry} />
+          </div>
         </>
       )}
 
