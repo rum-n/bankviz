@@ -7,6 +7,8 @@ import CategoryChart from "@/components/dashboard/CategoryChart";
 import BalanceChart from "@/components/dashboard/BalanceChart";
 import TopMerchants from "@/components/dashboard/TopMerchants";
 import CountryChart from "@/components/dashboard/CountryChart";
+import KeyMetrics from "@/components/dashboard/KeyMetrics";
+import WeekdayChart from "@/components/dashboard/WeekdayChart";
 import AccountSwitcher from "@/components/AccountSwitcher";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
@@ -21,6 +23,12 @@ interface Stats {
   byCategoryByMonth: Record<string, { name: string; value: number }[]>;
   topMerchants: { name: string; total: number }[];
   byCountry: { name: string; total: number }[];
+  avgDailySpend: number;
+  avgWeeklySpend: number;
+  savingsRate: number;
+  momExpenseChange: number | null;
+  momIncomeChange: number | null;
+  byWeekday: { day: string; value: number }[];
   runningBalance: { date: string; balance: number }[];
 }
 
@@ -78,12 +86,22 @@ export default function DashboardPage() {
         <>
           <SummaryCards totalCredit={stats.totalCredit} totalDebit={stats.totalDebit} net={stats.net} />
 
+          <KeyMetrics
+            avgDailySpend={stats.avgDailySpend}
+            avgWeeklySpend={stats.avgWeeklySpend}
+            savingsRate={stats.savingsRate}
+            momExpenseChange={stats.momExpenseChange}
+          />
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <MonthlyChart data={stats.monthly} />
             <CategoryChart data={stats.byCategory} byMonth={stats.byCategoryByMonth} />
           </div>
 
-          <BalanceChart data={stats.runningBalance} />
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <BalanceChart data={stats.runningBalance} />
+            <WeekdayChart data={stats.byWeekday} />
+          </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
             <TopMerchants data={stats.topMerchants} />

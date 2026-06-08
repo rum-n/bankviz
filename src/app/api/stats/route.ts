@@ -80,6 +80,45 @@ export async function GET(request: NextRequest) {
       .map(([name, total]) => ({ name, total: Math.round(total * 100) / 100 }))
       .sort((a, b) => b.total - a.total);
 
+    // Average daily / weekly spend across the span of the data
+    let avgDailySpend = 0;
+    let avgWeeklySpend = 0;
+    const debitDates = spendingTx.filter((t) => t.debit).map((t) => t.accountingDate.getTime());
+    if (debitDates.length > 0) {
+      const span = Math.max(...debitDates) - Math.min(...debitDates);
+      const days = Math.max(1, Math.round(span / 86_400_000) + 1);
+      avgDailySpend = Math.round((totalDebit / days) * 100) / 100;
+      avgWeeklySpend = Math.round((avgDailySpend * 7) * 100) / 100;
+    }
+
+    // Savings rate: net income kept as a share of total income
+    const savingsRate =
+      totalCredit > 0 ? Math.round(((totalCredit - totalDebit) / totalCredit) * 1000) / 10 : 0;
+
+    // Month-over-month change (latest full month vs the one before it)
+    let momExpenseChange: number | null = null;
+    let momIncomeChange: number | null = null;
+    if (monthly.length >= 2) {
+      const cur = monthly[monthly.length - 1];
+      const prev = monthly[monthly.length - 2];
+      if (prev.expenses > 0) momExpenseChange = Math.round(((cur.expenses - prev.expenses) / prev.expenses) * 1000) / 10;
+      if (prev.income > 0) momIncomeChange = Math.round(((cur.income - prev.income) / prev.income) * 1000) / 10;
+    }
+
+    // Spending by day of week (Mon..Sun)
+    const weekdayLabels = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const weekdayTotals = new Array(7).fill(0);
+    for (const t of spendingTx) {
+      if (!t.debit) continue;
+      const jsDay = t.accountingDate.getUTCDay(); // 0=Sun..6=Sat
+      const idx = (jsDay + 6) % 7; // shift so Mon=0
+      weekdayTotals[idx] += t.debit;
+    }
+    const byWeekday = weekdayLabels.map((day, i) => ({
+      day,
+      value: Math.round(weekdayTotals[i] * 100) / 100,
+    }));
+
     let running = 0;
     const dailyMap: Record<string, number> = {};
     for (const t of transactions) {
@@ -104,6 +143,12 @@ export async function GET(request: NextRequest) {
       byCategoryByMonth,
       topMerchants,
       byCountry,
+      avgDailySpend,
+      avgWeeklySpend,
+      savingsRate,
+      momExpenseChange,
+      momIncomeChange,
+      byWeekday,
       runningBalance,
     });
   } catch (err) {
